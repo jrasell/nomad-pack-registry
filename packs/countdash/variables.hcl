@@ -7,7 +7,7 @@ variable "datacenters" {
 variable "region" {
   description = "The region where the jobs should be placed."
   type        = string
-  default     = "eu-west-1"
+  default     = "global"
 }
 
 variable "namespace" {
