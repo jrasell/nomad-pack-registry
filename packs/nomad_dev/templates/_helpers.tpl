@@ -1,0 +1,7 @@
+[[- define "full_job_name" -]]
+[[- if eq .nomad_dev.job_name "" -]]
+[[- "nomad-dev-cluster" -]]
+[[- else -]]
+[[- .nomad_dev.job_name | quote -]]
+[[- end -]]
+[[- end -]]
