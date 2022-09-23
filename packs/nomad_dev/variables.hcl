@@ -32,3 +32,9 @@ variable "nomad_regions" {
   type        = list(string)
   default     = ["eu-west-2", "eu-central-1"]
 }
+
+variable "nomad_service_provider" {
+  description = "The service provider to use for registering services. Supports nomad, consul, or if left empty means services registration will be skipped."
+  type        = string
+  default     = "nomad"
+}

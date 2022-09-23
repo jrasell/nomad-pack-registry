@@ -8,6 +8,60 @@ job [[ template "full_job_name" . ]] {
 
   group [[ $region | quote ]] {
 
+    network {
+      port "server_http" {
+        static = [[ printf "5%v46" $idx | quote ]]
+      }
+      port "server_serf" {
+        static = [[ printf "5%v47" $idx | quote ]]
+      }
+      port "server_rpc" {
+        static = [[ printf "5%v48" $idx | quote ]]
+      }
+      port "client_http" {
+        static = [[ printf "5%v56" $idx | quote ]]
+      }
+      port "client_serf" {
+        static = [[ printf "5%v57" $idx | quote ]]
+      }
+      port "client_rpc" {
+        static = [[ printf "5%v58" $idx | quote ]]
+      }
+    }
+
+    [[ if $packVars.nomad_service_provider ]]
+    service {
+      name     = [[ printf "%s-server-1-http" $region | quote ]]
+      provider = [[ $packVars.nomad_service_provider | quote ]]
+      port     = "server_http"
+    }
+    service {
+      name     = [[ printf "%s-server-1-serf" $region | quote ]]
+      provider = [[ $packVars.nomad_service_provider | quote ]]
+      port     = "server_serf"
+    }
+    service {
+      name     = [[ printf "%s-server-1-rpc" $region | quote ]]
+      provider = [[ $packVars.nomad_service_provider | quote ]]
+      port     = "server_rpc"
+    }
+    service {
+      name     = [[ printf "%s-client-1-http" $region | quote ]]
+      provider = [[ $packVars.nomad_service_provider | quote ]]
+      port     = "client_http"
+    }
+    service {
+      name     = [[ printf "%s-client-1-serf" $region | quote ]]
+      provider = [[ $packVars.nomad_service_provider | quote ]]
+      port     = "client_serf"
+    }
+    service {
+      name     = [[ printf "%s-client-1-rpc" $region | quote ]]
+      provider = [[ $packVars.nomad_service_provider | quote ]]
+      port     = "client_rpc"
+    }
+    [[ end -]]
+
     task "server" {
       driver = "raw_exec"
 
@@ -75,7 +129,7 @@ EOF
       }
     }
 
-    [[ if $idx ]]
+    [[ if $idx -]]
     task "federate" {
 
       lifecycle {
