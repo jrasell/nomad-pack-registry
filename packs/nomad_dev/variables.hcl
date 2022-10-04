@@ -33,6 +33,12 @@ variable "nomad_regions" {
   default     = ["eu-west-2", "eu-central-1"]
 }
 
+variable "nomad_acl_bootstrap_token" {
+  description = "The ACL token to bootstrap the cluster with. If left empty, ACLs will be disabled."
+  type        = string
+  default     = ""
+}
+
 variable "nomad_service_provider" {
   description = "The service provider to use for registering services. Supports nomad, consul, or if left empty means services registration will be skipped."
   type        = string

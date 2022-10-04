@@ -29,6 +29,8 @@ used to run the Nomad tasks.
 - `nomad_regions` (list(string) ["eu-west-2", "eu-central-1"]) - A list of region
 identifiers to deploy. The first entry in the array will be considered
 authoritative.
+- `nomad_acl_bootstrap_token` (string "") - The ACL token to bootstrap the
+cluster with. If left empty, ACLs will be disabled.
 - `nomad_service_provider` (string "nomad") - The service provider to use for
 registering services. Supports nomad, consul, or if left empty means service
 registration will be skipped.

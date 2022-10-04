@@ -1,7 +1,7 @@
 The new Nomad development cluster has now been deployed. It includes [[ len .nomad_dev.nomad_regions ]]
 regions named [[ .nomad_dev.nomad_regions | join ", " ]].
 
-[[ range $idx, $region := .nomad_dev.nomad_regions -]]
+[[ $packVars := .nomad_dev ]] [[ range $idx, $region := .nomad_dev.nomad_regions -]]
 The [[ $region | quote ]] Region
   Server:
     HTTP: [[ printf "127.0.0.1:5%v46" $idx | quote ]]
@@ -15,8 +15,9 @@ The [[ $region | quote ]] Region
 The following commands can be used to set environment variables to interact
 with the [[ $region | quote ]] HTTP API:
   export NOMAD_ADDR=[[ printf "http://127.0.0.1:5%v46" $idx | quote ]]
+  [[ if $packVars.nomad_acl_bootstrap_token ]]export NOMAD_TOKEN=[[ $packVars.nomad_acl_bootstrap_token | quote ]][[ end ]]
 
 The following link will access the [[ $region | quote ]] UI:
   http://[[ printf "127.0.0.1:5%v46" $idx ]]
 
-[[ end ]]
+[[- end -]]

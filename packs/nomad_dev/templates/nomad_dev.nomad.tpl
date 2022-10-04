@@ -81,8 +81,9 @@ name     = [[ printf "%s-server-1" $region | quote ]]
 region   = [[ $region | quote ]]
 
 server {
-  enabled          = true
-  bootstrap_expect = 1
+  authoritative_region = [[ index $packVars.nomad_regions 0 | quote ]]
+  enabled              = true
+  bootstrap_expect     = 1
 }
 
 ports {
@@ -90,9 +91,53 @@ ports {
   rpc  = [[ printf "5%v47" $idx | quote ]]
   serf = [[ printf "5%v48" $idx | quote ]]
 }
+
+[[ if $packVars.nomad_acl_bootstrap_token -]]
+acl {
+  enabled           = true
+  replication_token = [[ $packVars.nomad_acl_bootstrap_token | quote ]]
+}
+[[ end -]]
 EOF
       }
     }
+
+    [[ if $packVars.nomad_acl_bootstrap_token ]] [[ if eq $idx 0 -]]
+    task "acl_bootstrap" {
+
+      lifecycle {
+        hook    = "poststart"
+        sidecar = false
+      }
+
+      driver = "raw_exec"
+
+      config {
+        command = "bash"
+        args    = [
+          "local/acl_bootstrap.sh",
+        ]
+      }
+
+      template {
+        destination = "local/acl_bootstrap.sh"
+        data        = <<EOF
+#!/bin/bash
+
+echo [[ $packVars.nomad_acl_bootstrap_token ]] >> .root_token
+
+for i in {1..20}
+do
+  if NOMAD_ADDR="http://127.0.0.1:5046" [[ $packVars.nomad_binary_path ]] acl bootstrap -json .root_token; then
+    exit 0
+  else
+    sleep 5
+  fi
+done
+EOF
+      }
+    }
+    [[- end ]][[- end ]]
 
     task "client" {
       driver = "raw_exec"
@@ -125,6 +170,12 @@ ports {
   rpc  = [[ printf "5%v57" $idx | quote ]]
   serf = [[ printf "5%v58" $idx | quote ]]
 }
+
+[[ if $packVars.nomad_acl_bootstrap_token -]]
+acl {
+  enabled = true
+}
+[[ end -]]
 EOF
       }
     }
