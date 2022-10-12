@@ -28,9 +28,15 @@ variable "nomad_binary_path" {
 }
 
 variable "nomad_regions" {
-  description = "A list of region identifiers to deploy. The first entry in the array will be considered authoritative"
-  type        = list(string)
-  default     = ["eu-west-2", "eu-central-1"]
+  description = "A list of maps defining regions to deploy. The first entry in the array will be considered authoritative."
+  type        = list(object({
+    name         = string
+    initial_port = number
+  }))
+  default = [
+    { name = "eu-west-2", initial_port = 5000 },
+    { name = "eu-central-1", initial_port = 5100 },
+  ]
 }
 
 variable "nomad_acl_bootstrap_token" {

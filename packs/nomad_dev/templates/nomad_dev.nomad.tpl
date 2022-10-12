@@ -6,57 +6,57 @@ job [[ template "full_job_name" . ]] {
 
   [[ $packVars := .nomad_dev ]] [[ range $idx, $region := .nomad_dev.nomad_regions ]]
 
-  group [[ $region | quote ]] {
+  group [[ $region.name | quote ]] {
 
     network {
       port "server_http" {
-        static = [[ printf "5%v46" $idx | quote ]]
-      }
-      port "server_serf" {
-        static = [[ printf "5%v47" $idx | quote ]]
+        static = [[ $region.initial_port | quote ]]
       }
       port "server_rpc" {
-        static = [[ printf "5%v48" $idx | quote ]]
+        static = [[ add 1 $region.initial_port | quote ]]
+      }
+      port "server_serf" {
+        static = [[ add 2 $region.initial_port | quote ]]
       }
       port "client_http" {
-        static = [[ printf "5%v56" $idx | quote ]]
-      }
-      port "client_serf" {
-        static = [[ printf "5%v57" $idx | quote ]]
+        static = [[ add 3 $region.initial_port | quote ]]
       }
       port "client_rpc" {
-        static = [[ printf "5%v58" $idx | quote ]]
+        static = [[ add 4 $region.initial_port | quote ]]
+      }
+      port "client_serf" {
+        static = [[ add 5 $region.initial_port | quote ]]
       }
     }
 
     [[ if $packVars.nomad_service_provider ]]
     service {
-      name     = [[ printf "%s-server-1-http" $region | quote ]]
+      name     = [[ printf "%s-server-1-http" $region.name | quote ]]
       provider = [[ $packVars.nomad_service_provider | quote ]]
       port     = "server_http"
     }
     service {
-      name     = [[ printf "%s-server-1-serf" $region | quote ]]
+      name     = [[ printf "%s-server-1-serf" $region.name | quote ]]
       provider = [[ $packVars.nomad_service_provider | quote ]]
       port     = "server_serf"
     }
     service {
-      name     = [[ printf "%s-server-1-rpc" $region | quote ]]
+      name     = [[ printf "%s-server-1-rpc" $region.name | quote ]]
       provider = [[ $packVars.nomad_service_provider | quote ]]
       port     = "server_rpc"
     }
     service {
-      name     = [[ printf "%s-client-1-http" $region | quote ]]
+      name     = [[ printf "%s-client-1-http" $region.name | quote ]]
       provider = [[ $packVars.nomad_service_provider | quote ]]
       port     = "client_http"
     }
     service {
-      name     = [[ printf "%s-client-1-serf" $region | quote ]]
+      name     = [[ printf "%s-client-1-serf" $region.name | quote ]]
       provider = [[ $packVars.nomad_service_provider | quote ]]
       port     = "client_serf"
     }
     service {
-      name     = [[ printf "%s-client-1-rpc" $region | quote ]]
+      name     = [[ printf "%s-client-1-rpc" $region.name | quote ]]
       provider = [[ $packVars.nomad_service_provider | quote ]]
       port     = "client_rpc"
     }
@@ -77,19 +77,19 @@ job [[ template "full_job_name" . ]] {
         destination = "local/config.hcl"
         data        = <<EOF
 data_dir = "{{ env "NOMAD_TASK_DIR" }}/data"
-name     = [[ printf "%s-server-1" $region | quote ]]
-region   = [[ $region | quote ]]
+name     = [[ printf "%s-server-1" $region.name | quote ]]
+region   = [[ $region.name | quote ]]
 
 server {
-  authoritative_region = [[ index $packVars.nomad_regions 0 | quote ]]
+  authoritative_region = [[ $authRegion := index $packVars.nomad_regions 0 ]][[ $authRegion.name | quote ]]
   enabled              = true
   bootstrap_expect     = 1
 }
 
 ports {
-  http = [[ printf "5%v46" $idx | quote ]]
-  rpc  = [[ printf "5%v47" $idx | quote ]]
-  serf = [[ printf "5%v48" $idx | quote ]]
+  http = [[ $region.initial_port | quote ]]
+  rpc  = [[ add 1 $region.initial_port | quote ]]
+  serf = [[ add 2 $region.initial_port | quote ]]
 }
 
 [[ if $packVars.nomad_acl_bootstrap_token -]]
@@ -128,7 +128,7 @@ echo [[ $packVars.nomad_acl_bootstrap_token ]] >> .root_token
 
 for i in {1..20}
 do
-  if NOMAD_ADDR="http://127.0.0.1:5046" [[ $packVars.nomad_binary_path ]] acl bootstrap -json .root_token; then
+  if NOMAD_ADDR="http://127.0.0.1:[[ $region.initial_port ]]" [[ $packVars.nomad_binary_path ]] acl bootstrap -json .root_token; then
     exit 0
   else
     sleep 5
@@ -154,21 +154,21 @@ EOF
         destination = "local/config.hcl"
         data        = <<EOF
 data_dir = "{{ env "NOMAD_TASK_DIR" }}/data"
-name     = [[ printf "%s-client-1" $region | quote ]]
-region   = [[ $region | quote ]]
+name     = [[ printf "%s-client-1" $region.name | quote ]]
+region   = [[ $region.name | quote ]]
 
 client {
   enabled = true
 
   server_join {
-    retry_join = [ [[- printf "127.0.0.1:5%v47" $idx | quote -]] ]
+    retry_join = [ "127.0.0.1:[[- add 1 $region.initial_port -]]" ]
   }
 }
 
 ports {
-  http = [[ printf "5%v56" $idx | quote ]]
-  rpc  = [[ printf "5%v57" $idx | quote ]]
-  serf = [[ printf "5%v58" $idx | quote ]]
+  http = [[ add 3 $region.initial_port | quote ]]
+  rpc  = [[ add 4 $region.initial_port | quote ]]
+  serf = [[ add 5 $region.initial_port | quote ]]
 }
 
 [[ if $packVars.nomad_acl_bootstrap_token -]]
@@ -204,7 +204,7 @@ EOF
 
 for i in {1..20}
 do
-  if NOMAD_ADDR=[[- printf "http://127.0.0.1:5%v46" $idx | quote ]] [[ $packVars.nomad_binary_path ]] server join 127.0.0.1:5048; then
+  if NOMAD_ADDR="http://127.0.0.1:[[- $region.initial_port ]]" [[ $packVars.nomad_binary_path ]] server join 127.0.0.1:[[ $authRegion := index $packVars.nomad_regions 0 ]][[ add 2 $authRegion.initial_port ]]; then
     exit 0
   else
     sleep 5
