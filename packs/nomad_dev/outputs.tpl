@@ -18,6 +18,6 @@ with the [[ $region.name | quote ]] HTTP API:
   [[- if $packVars.nomad_acl_bootstrap_token ]]export NOMAD_TOKEN=[[ $packVars.nomad_acl_bootstrap_token | quote ]][[ end ]]
 
 The following link will access the [[ $region.name | quote ]] UI:
-  http://[[ printf "127.0.0.1:5%v46" $idx ]]
+  http://127.0.0.1:[[ $region.initial_port ]]
 
 [[ end -]]
