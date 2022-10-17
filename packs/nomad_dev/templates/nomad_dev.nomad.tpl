@@ -76,9 +76,10 @@ job [[ template "full_job_name" . ]] {
       template {
         destination = "local/config.hcl"
         data        = <<EOF
-data_dir = "{{ env "NOMAD_TASK_DIR" }}/data"
-name     = [[ printf "%s-server-1" $region.name | quote ]]
-region   = [[ $region.name | quote ]]
+data_dir     = "{{ env "NOMAD_TASK_DIR" }}/data"
+name         = [[ printf "%s-server-1" $region.name | quote ]]
+region       = [[ $region.name | quote ]]
+enable_debug = true
 
 server {
   authoritative_region = [[ $authRegion := index $packVars.nomad_regions 0 ]][[ $authRegion.name | quote ]]
@@ -98,6 +99,11 @@ acl {
   replication_token = [[ $packVars.nomad_acl_bootstrap_token | quote ]]
 }
 [[ end -]]
+
+telemetry {
+  publish_allocation_metrics = true
+  publish_node_metrics       = true
+}
 EOF
       }
     }
@@ -153,9 +159,10 @@ EOF
       template {
         destination = "local/config.hcl"
         data        = <<EOF
-data_dir = "{{ env "NOMAD_TASK_DIR" }}/data"
-name     = [[ printf "%s-client-1" $region.name | quote ]]
-region   = [[ $region.name | quote ]]
+data_dir     = "{{ env "NOMAD_TASK_DIR" }}/data"
+name         = [[ printf "%s-client-1" $region.name | quote ]]
+region       = [[ $region.name | quote ]]
+enable_debug = true
 
 client {
   enabled = true
@@ -176,6 +183,11 @@ acl {
   enabled = true
 }
 [[ end -]]
+
+telemetry {
+  publish_allocation_metrics = true
+  publish_node_metrics       = true
+}
 EOF
       }
     }
