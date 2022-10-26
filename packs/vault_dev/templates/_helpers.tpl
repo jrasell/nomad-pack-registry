@@ -1,0 +1,7 @@
+[[- define "full_job_name" -]]
+[[- if eq .vault_dev.job_name "" -]]
+[[- "vault-dev" -]]
+[[- else -]]
+[[- .vault_dev.job_name | quote -]]
+[[- end -]]
+[[- end -]]
