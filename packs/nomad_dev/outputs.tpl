@@ -15,7 +15,7 @@ The [[ $region.name | quote ]] Region
 The following commands can be used to set environment variables to interact
 with the [[ $region.name | quote ]] HTTP API:
   export NOMAD_ADDR="http://127.0.0.1:[[ $region.initial_port ]]"
-  [[- if $packVars.nomad_acl_bootstrap_token ]]export NOMAD_TOKEN=[[ $packVars.nomad_acl_bootstrap_token | quote ]][[ end ]]
+  [[ if $packVars.nomad_acl_bootstrap_token ]]export NOMAD_TOKEN=[[ $packVars.nomad_acl_bootstrap_token | quote ]][[- end ]]
 
 The following link will access the [[ $region.name | quote ]] UI:
   http://127.0.0.1:[[ $region.initial_port ]]
